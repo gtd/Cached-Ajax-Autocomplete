@@ -1,14 +1,20 @@
 /*
- *
+ *  CachedAjaxAutocomplete, v1.0
+ *  (c) 2009 Gabe da Silveira
+ *    based on
  *  Ajax Autocomplete for Prototype, version 1.0.3
+ *  http://www.devbridge.com/projects/autocomplete/
  *  (c) 2008 Tomas Kirda
  *
  *  Ajax Autocomplete for Prototype is freely distributable under the terms of an MIT-style license.
- *  For details, see the web site: http://www.devbridge.com/projects/autocomplete/
  *
+ *  CachedAjaxAutocomplete is a minor refactoring to enable some enhancements.
+ *
+ *  - Uses Prototype's Class object to tidy up the prototypal inheritance
+ *  - Allows 
  */
 
-var Autocomplete = function(el, options){
+var CachedAjaxAutocomplete = function(el, options){
   this.el = $(el);
   this.id = this.el.identify();
   this.el.setAttribute('autocomplete','off');
@@ -32,27 +38,27 @@ var Autocomplete = function(el, options){
     container:null
   };
   if(options){ Object.extend(this.options, options); }
-  if(Autocomplete.isDomLoaded){
+  if(CachedAjaxAutocomplete.isDomLoaded){
     this.initialize();
   }else{
     Event.observe(document, 'dom:loaded', this.initialize.bind(this), false);
   }
 };
 
-Autocomplete.instances = [];
-Autocomplete.isDomLoaded = false;
+CachedAjaxAutocomplete.instances = [];
+CachedAjaxAutocomplete.isDomLoaded = false;
 
-Autocomplete.getInstance = function(id){
-  var instances = Autocomplete.instances;
+CachedAjaxAutocomplete.getInstance = function(id){
+  var instances = CachedAjaxAutocomplete.instances;
   var i = instances.length;
   while(i--){ if(instances[i].id === id){ return instances[i]; }}
 };
 
-Autocomplete.highlight = function(value, re){
+CachedAjaxAutocomplete.highlight = function(value, re){
   return value.replace(re, function(match){ return '<strong>' + match + '<\/strong>' });
 };
 
-Autocomplete.prototype = {
+CachedAjaxAutocomplete.prototype = {
 
   killerFn: null,
 
@@ -87,7 +93,7 @@ Autocomplete.prototype = {
     Event.observe(this.el, 'blur', this.enableKillerFn.bind(this));
     Event.observe(this.el, 'focus', this.fixPosition.bind(this));
     this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
-    this.instanceId = Autocomplete.instances.push(this) - 1;
+    this.instanceId = CachedAjaxAutocomplete.instances.push(this) - 1;
   },
 
   fixPosition: function() {
@@ -213,7 +219,7 @@ Autocomplete.prototype = {
     var content = [];
     var re = new RegExp('\\b' + this.currentValue.match(/\w+/g).join('|\\b'), 'gi');
     this.suggestions.each(function(value, i) {
-      content.push((this.selectedIndex === i ? '<div class="selected"' : '<div'), ' title="', value, '" onclick="Autocomplete.instances[', this.instanceId, '].select(', i, ');" onmouseover="Autocomplete.instances[', this.instanceId, '].activate(', i, ');">', Autocomplete.highlight(value, re), '</div>');
+      content.push((this.selectedIndex === i ? '<div class="selected"' : '<div'), ' title="', value, '" onclick="CachedAjaxAutocomplete.instances[', this.instanceId, '].select(', i, ');" onmouseover="CachedAjaxAutocomplete.instances[', this.instanceId, '].activate(', i, ');">', CachedAjaxAutocomplete.highlight(value, re), '</div>');
     } .bind(this));
     this.enabled = true;
     this.container.update(content.join('')).show();
@@ -301,4 +307,4 @@ Autocomplete.prototype = {
 
 };
 
-Event.observe(document, 'dom:loaded', function(){ Autocomplete.isDomLoaded = true; }, false);
+Event.observe(document, 'dom:loaded', function(){ CachedAjaxAutocomplete.isDomLoaded = true; }, false);
