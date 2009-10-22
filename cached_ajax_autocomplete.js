@@ -10,34 +10,39 @@
  *
  *  CachedAjaxAutocomplete is a minor refactoring to enable some enhancements.
  *
- *  - Uses Prototype's Class object to tidy up the prototypal inheritance
+ *  - Allow id to be passed as an option since the observed field is no longer constant
  *  - Allows the element the autocomplete is attached to to be changed
+ *
+ *  == Options
+ *
+ *  * `id` a unique identifier to identify the Autocomplete instance
  */
 
 var CachedAjaxAutocomplete = function(el, options){
+  this.options = {
+    autoSubmit:false,
+    minChars:1,
+    maxHeight:null,
+    deferRequestBy:200,
+    width:0,
+    container:null
+  };
+  if(options){ Object.extend(this.options, options); }
+
   this.el = $(el);
-  this.id = this.el.identify();
-  this.el.setAttribute('autocomplete','off');
+  this.id = options.id || this.el.identify(); // This is just a unique identifier, it is not specifically tied to the el.
   this.suggestions = [];
   this.data = [];
   this.badQueries = [];
   this.selectedIndex = -1;
-  this.currentValue = this.el.value;
+  this.currentValue = null;
   this.intervalId = 0;
   this.cachedResponse = [];
   this.instanceId = null;
   this.onChangeInterval = null;
   this.ignoreValueChange = false;
   this.serviceUrl = options.serviceUrl;
-  this.options = {
-    autoSubmit:false,
-    minChars:1,
-    maxHeight:300,
-    deferRequestBy:200,
-    width:0,
-    container:null
-  };
-  if(options){ Object.extend(this.options, options); }
+
   if(CachedAjaxAutocomplete.isDomLoaded){
     this.initialize();
   }else{
@@ -86,14 +91,36 @@ CachedAjaxAutocomplete.prototype = {
 
     this.mainContainerId = div.identify();
     this.container = $('Autocomplete_' + this.id);
+    this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
+
+    this.setObservedElement(this.el);
+
+    this.instanceId = CachedAjaxAutocomplete.instances.push(this) - 1;
+  },
+
+  setObservedElement: function(el) {
+    this.el = $(el);
+    this.el.setAttribute('autocomplete','off');
+    this.currentValue = this.el.value;
+
     this.fixPosition();
 
-    Event.observe(this.el, window.opera ? 'keypress':'keydown', this.onKeyPress.bind(this));
-    Event.observe(this.el, 'keyup', this.onKeyUp.bind(this));
-    Event.observe(this.el, 'blur', this.enableKillerFn.bind(this));
-    Event.observe(this.el, 'focus', this.fixPosition.bind(this));
-    this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
-    this.instanceId = CachedAjaxAutocomplete.instances.push(this) - 1;
+    if(this.boundKeyPressObserver) {
+      Event.stopObserving(this.el, window.opera ? 'keypress':'keydown', this.boundKeyPressObserver);
+      Event.stopObserving(this.el, 'keyup', this.boundKeyUpObserver);
+      Event.stopObserving(this.el, 'blur', this.boundBlurObserver);
+      Event.stopObserving(this.el, 'focus', this.boundFocusObserver);
+    }
+
+    this.boundKeyPressObserver = this.onKeyPress.bind(this);
+    this.boundKeyUpObserver = this.onKeyUp.bind(this);
+    this.boundBlurObserver = this.enableKillerFn.bind(this);
+    this.boundFocusObserver = this.fixPosition.bind(this);
+
+    Event.observe(this.el, window.opera ? 'keypress':'keydown', this.boundKeyPressObserver);
+    Event.observe(this.el, 'keyup', this.boundKeyUpObserver);
+    Event.observe(this.el, 'blur', this.boundBlurObserver);
+    Event.observe(this.el, 'focus', this.boundFocusObserver);
   },
 
   fixPosition: function() {
