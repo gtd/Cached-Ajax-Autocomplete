@@ -11,7 +11,7 @@
  *  CachedAjaxAutocomplete is a minor refactoring to enable some enhancements.
  *
  *  - Uses Prototype's Class object to tidy up the prototypal inheritance
- *  - Allows 
+ *  - Allows the element the autocomplete is attached to to be changed
  */
 
 var CachedAjaxAutocomplete = function(el, options){
@@ -87,7 +87,7 @@ CachedAjaxAutocomplete.prototype = {
     this.mainContainerId = div.identify();
     this.container = $('Autocomplete_' + this.id);
     this.fixPosition();
-    
+
     Event.observe(this.el, window.opera ? 'keypress':'keydown', this.onKeyPress.bind(this));
     Event.observe(this.el, 'keyup', this.onKeyUp.bind(this));
     Event.observe(this.el, 'blur', this.enableKillerFn.bind(this));
