@@ -71,7 +71,7 @@ CachedAjaxAutocomplete.prototype = {
       }
     } .bindAsEventListener(this);
 
-    if (!this.options.width) { this.options.width = this.el.getWidth(); }
+    if (!this.options.width) { this.options.width = this.el.getWidth() - 2; }
 
     var div = new Element('div', { style: 'position:absolute;' });
     div.update('<div class="autocomplete-w1"><div class="autocomplete-w2"><div class="autocomplete" id="Autocomplete_' + this.id + '" style="display:none; width:' + this.options.width + 'px;"></div></div></div>');
