@@ -33,7 +33,7 @@ var CachedAjaxAutocomplete = function(el, options){
     autoSubmit:false,
     minChars:1,
     maxHeight:300,
-    deferRequestBy:0,
+    deferRequestBy:200,
     width:0,
     container:null
   };
