@@ -216,6 +216,7 @@ CachedAjaxAutocomplete.prototype = {
       this.data = cr.data;
       this.suggest();
     } else if (!this.isBadQuery(this.currentValue)) {
+      this.el.addClassName('autocomplete_indicator');
       new Ajax.Request(this.serviceUrl, {
         parameters: { query: this.currentValue },
         onComplete: this.processResponse.bind(this),
@@ -263,6 +264,7 @@ CachedAjaxAutocomplete.prototype = {
     this.cachedResponse[response.query] = response;
     if (response.suggestions.length === 0) { this.badQueries.push(response.query); }
     if (response.query === this.currentValue) { this.suggest(); }
+    this.el.removeClassName('autocomplete_indicator');
   },
 
   activate: function(index) {
