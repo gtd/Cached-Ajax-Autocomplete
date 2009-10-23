@@ -29,8 +29,8 @@ var CachedAjaxAutocomplete = function(el, options){
   };
   if(options){ Object.extend(this.options, options); }
 
-  this.el = $(el);
-  this.id = options.id || this.el.identify(); // This is just a unique identifier, it is not specifically tied to the el.
+  this.el = el; // Initialization based on this is deferred, so you can pass in null
+  this.id = null;
   this.elements = []; // We can observe any number of fields.
   this.suggestions = [];
   this.data = [];
@@ -69,15 +69,20 @@ CachedAjaxAutocomplete.prototype = {
   killerFn: null,
 
   initialize: function() {
-    var me = this;
+    this.isInitialized = false;
+    if(this.el) this.addObservedElement(this.el);
+  },
+
+  deferredInitialization: function(el) {
     this.killerFn = function(e) {
       if (!$(Event.element(e)).up('.autocomplete')) {
-        me.killSuggestions();
-        me.disableKillerFn();
+        this.killSuggestions();
+        this.disableKillerFn();
       }
     }.bindAsEventListener(this);
 
-    if (!this.options.width) { this.options.width = this.el.getWidth() - 2; }
+    this.id = this.options.id || el.identify();
+    if(!this.options.width) { this.options.width = el.getWidth() - 2; }
 
     var div = new Element('div', { style: 'position:absolute;' });
     div.update('<div class="autocomplete-w1"><div class="autocomplete-w2"><div class="autocomplete" id="Autocomplete_' + this.id + '" style="display:none; width:' + this.options.width + 'px;"></div></div></div>');
@@ -93,13 +98,13 @@ CachedAjaxAutocomplete.prototype = {
     this.mainContainerId = div.identify();
     this.container = $('Autocomplete_' + this.id);
     if(this.options.maxHeight) this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
-
-    this.addObservedElement(this.el);
-
-    this.instanceId = CachedAjaxAutocomplete.instances.push(this) - 1;
   },
 
   addObservedElement: function(el) {
+    if(!this.isInitialized) {
+      this.deferredInitialization(el);
+    }
+
     el = $(el);
     el.setAttribute('autocomplete','off');
 
@@ -109,6 +114,7 @@ CachedAjaxAutocomplete.prototype = {
     Event.observe(el, 'focus', this.setActiveElement.bind(this));
 
     this.elements.push(el);
+    this.instanceId = CachedAjaxAutocomplete.instances.push(this) - 1;
   },
 
   setActiveElement: function(event) {
