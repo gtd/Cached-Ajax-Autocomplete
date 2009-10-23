@@ -91,7 +91,7 @@ CachedAjaxAutocomplete.prototype = {
 
     this.mainContainerId = div.identify();
     this.container = $('Autocomplete_' + this.id);
-    this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
+    if(this.options.maxHeight) this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
 
     this.setObservedElement(this.el);
 
@@ -319,14 +319,19 @@ CachedAjaxAutocomplete.prototype = {
   adjustScroll: function(i) {
     var container = this.container;
     var activeItem = this.activate(i);
-    var offsetTop = activeItem.offsetTop;
-    var upperBound = container.scrollTop;
-    var lowerBound = upperBound + this.options.maxHeight - 25;
-    if (offsetTop < upperBound) {
-      container.scrollTop = offsetTop;
-    } else if (offsetTop > lowerBound) {
-      container.scrollTop = offsetTop - this.options.maxHeight + 25;
+
+    if(this.options.maxHeight) {
+      var offsetTop = activeItem.offsetTop;
+      var upperBound = container.scrollTop;
+      var lowerBound = upperBound + this.options.maxHeight - 25;
+
+      if (offsetTop < upperBound) {
+        container.scrollTop = offsetTop;
+      } else if (offsetTop > lowerBound) {
+        container.scrollTop = offsetTop - this.options.maxHeight + 25;
+      }
     }
+
     this.el.value = this.suggestions[i];
   },
 
