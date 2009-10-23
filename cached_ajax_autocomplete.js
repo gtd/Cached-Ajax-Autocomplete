@@ -31,6 +31,7 @@ var CachedAjaxAutocomplete = function(el, options){
 
   this.el = $(el);
   this.id = options.id || this.el.identify(); // This is just a unique identifier, it is not specifically tied to the el.
+  this.elements = []; // We can observe any number of fields.
   this.suggestions = [];
   this.data = [];
   this.badQueries = [];
@@ -74,7 +75,7 @@ CachedAjaxAutocomplete.prototype = {
         me.killSuggestions();
         me.disableKillerFn();
       }
-    } .bindAsEventListener(this);
+    }.bindAsEventListener(this);
 
     if (!this.options.width) { this.options.width = this.el.getWidth() - 2; }
 
@@ -93,34 +94,27 @@ CachedAjaxAutocomplete.prototype = {
     this.container = $('Autocomplete_' + this.id);
     if(this.options.maxHeight) this.container.setStyle({ maxHeight: this.options.maxHeight + 'px' });
 
-    this.setObservedElement(this.el);
+    this.addObservedElement(this.el);
 
     this.instanceId = CachedAjaxAutocomplete.instances.push(this) - 1;
   },
 
-  setObservedElement: function(el) {
-    this.el = $(el);
-    this.el.setAttribute('autocomplete','off');
+  addObservedElement: function(el) {
+    el = $(el);
+    el.setAttribute('autocomplete','off');
+
+    Event.observe(el, window.opera ? 'keypress':'keydown', this.onKeyPress.bind(this));
+    Event.observe(el, 'keyup', this.onKeyUp.bind(this));
+    Event.observe(el, 'blur', this.enableKillerFn.bind(this));
+    Event.observe(el, 'focus', this.setActiveElement.bind(this));
+
+    this.elements.push(el);
+  },
+
+  setActiveElement: function(event) {
+    this.el = event.findElement('input');
     this.currentValue = this.el.value;
-
     this.fixPosition();
-
-    if(this.boundKeyPressObserver) {
-      Event.stopObserving(this.el, window.opera ? 'keypress':'keydown', this.boundKeyPressObserver);
-      Event.stopObserving(this.el, 'keyup', this.boundKeyUpObserver);
-      Event.stopObserving(this.el, 'blur', this.boundBlurObserver);
-      Event.stopObserving(this.el, 'focus', this.boundFocusObserver);
-    }
-
-    this.boundKeyPressObserver = this.onKeyPress.bind(this);
-    this.boundKeyUpObserver = this.onKeyUp.bind(this);
-    this.boundBlurObserver = this.enableKillerFn.bind(this);
-    this.boundFocusObserver = this.fixPosition.bind(this);
-
-    Event.observe(this.el, window.opera ? 'keypress':'keydown', this.boundKeyPressObserver);
-    Event.observe(this.el, 'keyup', this.boundKeyUpObserver);
-    Event.observe(this.el, 'blur', this.boundBlurObserver);
-    Event.observe(this.el, 'focus', this.boundFocusObserver);
   },
 
   fixPosition: function() {
