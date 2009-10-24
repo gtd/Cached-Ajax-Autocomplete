@@ -60,7 +60,7 @@ CachedAjaxAutocomplete.getInstance = function(id){
   while(i--){ if(instances[i].id === id){ return instances[i]; }}
 };
 
-CachedAjaxAutocomplete.highlight = function(value, re){
+CachedAjaxAutocomplete.highlight = function(value, re, data){
   return value.replace(re, function(match){ return '<strong>' + match + '<\/strong>' });
 };
 
@@ -138,7 +138,7 @@ CachedAjaxAutocomplete.prototype = {
 
   killSuggestions: function() {
     this.stopKillSuggestions();
-    this.intervalId = window.setInterval(function() { this.hide(); this.stopKillSuggestions(); } .bind(this), 300);
+    this.intervalId = window.setInterval(function() { this.hide(); this.stopKillSuggestions(); }.bind(this), 300);
   },
 
   stopKillSuggestions: function() {
@@ -247,8 +247,12 @@ CachedAjaxAutocomplete.prototype = {
     var content = [];
     var re = new RegExp('\\b' + this.currentValue.match(/\w+/g).join('|\\b'), 'gi');
     this.suggestions.each(function(value, i) {
-      content.push((this.selectedIndex === i ? '<div class="selected"' : '<div'), ' title="', value, '" onclick="CachedAjaxAutocomplete.instances[', this.instanceId, '].select(', i, ');" onmouseover="CachedAjaxAutocomplete.instances[', this.instanceId, '].activate(', i, ');">', CachedAjaxAutocomplete.highlight(value, re), '</div>');
-    } .bind(this));
+      var selectedClass = (this.selectedIndex === i ? 'class="selected"' : '');
+      content.push('<div title="', value, '" ',
+        'onclick="CachedAjaxAutocomplete.instances[', this.instanceId, '].select(', i, ');" ',
+        'onmouseover="CachedAjaxAutocomplete.instances[', this.instanceId, '].activate(', i, ');">',
+        this.formatSuggestion(value, re, this.data[i]), '</div>');
+    }.bind(this));
     this.enabled = true;
     this.container.update(content.join('')).show();
   },
@@ -337,6 +341,10 @@ CachedAjaxAutocomplete.prototype = {
 
   onSelect: function(i) {
     (this.options.onSelect || Prototype.emptyFunction)(this.suggestions[i], this.data[i]);
+  },
+
+  formatSuggestion: function(value, re, data) {
+    return (this.options.formatSuggestion || CachedAjaxAutocomplete.highlight)(value, re, data);
   }
 
 };
