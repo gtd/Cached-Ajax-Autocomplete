@@ -101,12 +101,12 @@ CachedAjaxAutocomplete.prototype = {
   },
 
   addObservedElement: function(el) {
+    el = $(el);
+    el.setAttribute('autocomplete','off');
+
     if(!this.isInitialized) {
       this.deferredInitialization(el);
     }
-
-    el = $(el);
-    el.setAttribute('autocomplete','off');
 
     Event.observe(el, window.opera ? 'keypress':'keydown', this.onKeyPress.bind(this));
     Event.observe(el, 'keyup', this.onKeyUp.bind(this));
